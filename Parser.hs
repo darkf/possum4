@@ -23,10 +23,58 @@ takeTokens n = do
 		return $ Just tokens'
 
 takeToken = takeTokens 1 >>= return . fmap head
+takeTokenUnsafe = do
+	tok <- takeToken
+	case tok of
+		Just t -> return t
+		Nothing -> error "takeTokenUnsafe: wanted one token, but got end of stream"
+
+-- Takes tokens until the token applied to the predicate is True. Also takes the matching token.
+takeTokensUntil :: (T.Token -> Bool) -> StateP [T.Token]
+takeTokensUntil predicate = do
+	p@ParserState {tokens=tokens} <- get
+	let (taken, _:tokens') = break predicate tokens
+	put $ p {tokens=tokens'}
+	return taken
+
+takeIdentifier = do
+	tok <- takeToken
+	case tok of
+		Just (T.Ident s) -> return s
+		Just t -> error $ "takeIdentifier: expected identifier, got " ++ show t
+		Nothing -> error "takeIdentifier: expected identifier, got end of stream"
 
 lookupArity ident = do
 	ParserState {arities=arities} <- get
 	return $ M.lookup ident arities
+
+bindArity ident arity = do
+	p@ParserState {arities=arities} <- get
+	let arities' = M.insert ident arity arities
+	return $ p {arities=arities'}
+
+expectToken token = do
+	tok <- takeToken
+	case tok of
+		Just t | t == token -> return ()
+		Just t -> error $ "parser: expected " ++ show token ++ " but got " ++ show t
+		Nothing -> error $ "parser: expected " ++ show token ++ " but got end of stream"
+
+-- Parses a defun
+-- defun f x y z is body end
+parseDefun :: StateP AST
+parseDefun = do
+	name <- takeIdentifier
+	args' <- takeTokensUntil (== T.Ident "is")
+	-- todo: parse body
+	let body = []
+	expectToken $ T.Ident "end"
+
+	let args = map (\(T.Ident i) -> Var i) args'
+	let arity = length args
+	
+	bindArity name arity -- bind arity so that we can parse calls
+	return $ Defun name args body
 
 -- Parse one expression
 parseExpr :: StateP AST
@@ -34,6 +82,7 @@ parseExpr = do
 	tok <- takeToken
 	case tok of
 		Just (T.Number n) -> return $ NumLit n
+		Just (T.Ident "defun") -> parseDefun
 		Just (T.Ident ident) -> do
 			arity' <- lookupArity ident
 			case arity' of

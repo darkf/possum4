@@ -5,5 +5,6 @@ data AST = NumLit Double
 		 | Var String
 		 | Def String AST
 		 | Lambda [AST] [AST]
+		 | Defun String [AST] [AST]
 		 | Apply AST [AST]
 		 deriving (Show, Eq)

@@ -37,10 +37,20 @@ bare_app_test = TestCase $ do
 					   Var "y"
 					   ]
 
+defun_test = TestCase $ do
+	-- defun foo x is
+	parse [Ident "defun", Ident "foo", Ident "x", Ident "is", Ident "end"] @?=
+			[Defun "foo" [Var "x"] []]
+	-- defun foo x y z is
+	parse [Ident "defun", Ident "foo", Ident "x", Ident "y", Ident "z", Ident "is", Ident "end"] @?=
+			[Defun "foo" [Var "x", Var "y", Var "z"] []]
+
 parserTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
 	  TestLabel "literals_test" literals_test,
 
-	  TestLabel "bare_app_test" bare_app_test
+	  TestLabel "bare_app_test" bare_app_test,
+
+	  TestLabel "defun_test" defun_test
 	]
