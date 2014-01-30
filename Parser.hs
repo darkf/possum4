@@ -101,6 +101,11 @@ parseExpr = do
 					args <- replicateM arity parseExpr
 					return $ Apply (Var ident) args
 				Nothing -> return $ Var ident -- variable
+		Just T.LParen -> do
+			-- parenthesized application
+			fn <- parseExpr
+			args <- parseUntil (== T.RParen)
+			return $ Apply fn args
 		Just t -> error $ "parseExpr: unhandled token " ++ show t
 		Nothing -> error "parseExpr: empty stream"
 

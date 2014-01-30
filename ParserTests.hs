@@ -76,6 +76,21 @@ multiple_defun_test = TestCase $ do
 		  	Apply (Var "bar") [NumLit 5.0]
 		  ]
 
+-- Parenthesized applications
+paren_apply_test = TestCase $ do
+	-- (f x 123 y)
+	parse [LParen, Ident "f", Ident "x", Number 123.0, Ident "y", RParen]
+			@?= [Apply (Var "f") [Var "x", NumLit 123.0, Var "y"]]
+
+	-- (f (g x y) z)
+	parse [LParen, Ident "f",
+				LParen, Ident "g", Ident "x", Ident "y", RParen,
+				Ident "z", RParen]
+			@?= [Apply (Var "f") [
+					Apply (Var "g") [Var "x", Var "y"],
+					Var "z"
+				]]
+
 parserTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -84,6 +99,6 @@ parserTests = TestList [
 	  TestLabel "bare_app_test" bare_app_test,
 
 	  TestLabel "defun_test" defun_test,
-
-	  TestLabel "multiple_defun_test" multiple_defun_test
+	  TestLabel "multiple_defun_test" multiple_defun_test,
+	  TestLabel "paren_apply_test" paren_apply_test
 	]
