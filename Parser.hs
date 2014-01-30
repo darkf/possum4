@@ -24,6 +24,8 @@ parse :: String -> [Token]
 parse "" = []
 parse (c:str)
 	| c == ' ' || c == '\t' = parse str -- ignore spaces/tabs
+	| c == '(' = LParen : parse str
+	| c == ')' = RParen : parse str
 	| otherwise =
 		let (token,rest) = splitIdentifier (c:str) in
 		case tryParseNum token of

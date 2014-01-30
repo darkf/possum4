@@ -36,6 +36,14 @@ spaces_test = TestCase $ do
 	parse "a     1  2.5     d" @?= [Ident "a", Number 1.0, Number 2.5, Ident "d"]
 	parse "a  \t  1\t2.5     d" @?= [Ident "a", Number 1.0, Number 2.5, Ident "d"]
 
+-- Parentheses
+parens_test = TestCase $ do
+	parse "(" @?= [LParen]
+	parse ")" @?= [RParen]
+	parse "()" @?= [LParen, RParen]
+	parse " ( ) " @?= [LParen, RParen]
+	parse "a(b)c" @?= [Ident "a", LParen, Ident "b", RParen, Ident "c"]
+
 -- Mixing tokens test
 mixed_test = TestCase $ do
 	parse "x ab y 123.75 z 4" @?= [Ident "x", Ident "ab", Ident "y", Number 123.75, Ident "z", Number 4]
@@ -45,13 +53,15 @@ mixed_test = TestCase $ do
 
 parserTests = TestList [
 	  TestLabel "empty_test" empty_test,
-	  
+
 	  TestLabel "identifiers" identifiers_test,
 	  TestLabel "identifier_stream" identifier_stream,
 
 	  TestLabel "numbers_test" numbers_test,
 
 	  TestLabel "spaces_test" spaces_test,
+
+	  TestLabel "parens_test" parens_test,
 
 	  TestLabel "mixed_test" mixed_test
 	]
