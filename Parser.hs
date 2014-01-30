@@ -44,6 +44,10 @@ takeIdentifier = do
 		Just t -> error $ "takeIdentifier: expected identifier, got " ++ show t
 		Nothing -> error "takeIdentifier: expected identifier, got end of stream"
 
+peekToken = do
+	ParserState {tokens=tokens} <- get
+	return $ head tokens
+
 lookupArity ident = do
 	ParserState {arities=arities} <- get
 	return $ M.lookup ident arities
@@ -60,20 +64,27 @@ expectToken token = do
 		Just t -> error $ "parser: expected " ++ show token ++ " but got " ++ show t
 		Nothing -> error $ "parser: expected " ++ show token ++ " but got end of stream"
 
+-- Parses a function body. Parses expressions until `end` is reached
+parseBody = do
+	tok <- peekToken
+	case tok of
+		T.Ident "end" -> return []
+		_ -> do
+			expr <- parseExpr
+			next <- parseBody
+			return $ expr : next
+
 -- Parses a defun
 -- defun f x y z is body end
 parseDefun :: StateP AST
 parseDefun = do
 	name <- takeIdentifier
 	args' <- takeTokensUntil (== T.Ident "is")
-	-- todo: parse body
-	let body = []
-	expectToken $ T.Ident "end"
-
 	let args = map (\(T.Ident i) -> Var i) args'
 	let arity = length args
-	
-	bindArity name arity -- bind arity so that we can parse calls
+	bindArity name arity -- bind arity so that we can parse calls (and before the body so self-reference works)
+	body <- parseBody
+	expectToken $ T.Ident "end"
 	return $ Defun name args body
 
 -- Parse one expression

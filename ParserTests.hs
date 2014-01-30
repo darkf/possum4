@@ -38,15 +38,27 @@ bare_app_test = TestCase $ do
 					   ]
 
 defun_test = TestCase $ do
-	-- defun foo is
+	-- defun foo is end
 	parse [Ident "defun", Ident "foo", Ident "is", Ident "end"] @?=
 			[Defun "foo" [] []]
-	-- defun foo x is
+	-- defun foo x is end
 	parse [Ident "defun", Ident "foo", Ident "x", Ident "is", Ident "end"] @?=
 			[Defun "foo" [Var "x"] []]
-	-- defun foo x y z is
+	-- defun foo x y z is end
 	parse [Ident "defun", Ident "foo", Ident "x", Ident "y", Ident "z", Ident "is", Ident "end"] @?=
 			[Defun "foo" [Var "x", Var "y", Var "z"] []]
+
+	-- with bodies
+
+	-- defun foo is 123 end
+	parse [Ident "defun", Ident "foo", Ident "is", Number 123.0, Ident "end"] @?=
+			[Defun "foo" [] [NumLit 123.0]]
+	-- defun foo x y is x end
+	parse [Ident "defun", Ident "foo",  Ident "x", Ident "y", Ident "is", Ident "x", Ident "end"] @?=
+			[Defun "foo" [Var "x", Var "y"] [Var "x"]]
+	-- defun foo x y is + x y end
+	parseWith (M.fromList [("+", 2)]) [Ident "defun", Ident "foo", Ident "x", Ident "y", Ident "is", Ident "+", Ident "x", Ident "y", Ident "end"] @?=
+			[Defun "foo" [Var "x", Var "y"] [Apply (Var "+") [Var "x", Var "y"]]]
 
 parserTests = TestList [
 	  TestLabel "empty_test" empty_test,
