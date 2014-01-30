@@ -1,33 +1,14 @@
 module Parser where
-import Data.Char (isSpace)
+import AST
+import qualified Tokenizer as T
 
-data Token = Ident String
-		   | Str String
-		   | Number Double
-		   | LParen
-		   | RParen
-		   deriving (Show, Eq)
+parse :: [T.Token] -> [AST]
+parse [] = []
+parse (t:ts) =
+	case t of
+		T.Number n -> NumLit n : parse ts
+		T.Ident ident -> Var ident : parse ts
+		_ -> error $ "unhandled token " ++ show t
 
-isIdentifierChar :: Char -> Bool
-isIdentifierChar = (`elem` ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "!?~@#$%^&*-+{}.,/")
-
-splitIdentifier :: String -> (String, String)
-splitIdentifier = break (not . isIdentifierChar)
-
-tryParseNum :: String -> Maybe Double
-tryParseNum str =
-	case reads str of
-		[(x, "")] -> Just x
-		_ -> Nothing
-
-parse :: String -> [Token]
-parse "" = []
-parse (c:str)
-	| c == ' ' || c == '\t' = parse str -- ignore spaces/tabs
-	| c == '(' = LParen : parse str
-	| c == ')' = RParen : parse str
-	| otherwise =
-		let (token,rest) = splitIdentifier (c:str) in
-		case tryParseNum token of
-			Just num -> Number num : parse rest
-			Nothing ->  Ident token : parse rest
+parseString :: String -> [AST]
+parseString = parse . T.tokenize

@@ -1,4 +1,8 @@
 import Test.HUnit (runTestTT)
 import TokenizerTests (tokenizerTests)
+import ParserTests (parserTests)
 
-main = runTestTT tokenizerTests >> return ()
+main = do
+	runTestTT tokenizerTests
+	runTestTT parserTests
+	return ()
