@@ -1,4 +1,4 @@
-module Parser where
+module Parser (parse, parseWith, parseString, parseStringWith, ArityMap) where
 import AST
 import Control.Monad.State
 import qualified Data.Map as M
@@ -60,6 +60,12 @@ parse' arities tokens = evalState parseTop ParserState { arities=arities, tokens
 
 parse :: [T.Token] -> [AST]
 parse = parse' M.empty
+
+parseWith :: ArityMap -> [T.Token] -> [AST]
+parseWith = parse'
+
+parseStringWith :: ArityMap -> String -> [AST]
+parseStringWith arities = parseWith arities . T.tokenize
 
 parseString :: String -> [AST]
 parseString = parse . T.tokenize
