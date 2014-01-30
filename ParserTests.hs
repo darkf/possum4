@@ -38,6 +38,9 @@ bare_app_test = TestCase $ do
 					   ]
 
 defun_test = TestCase $ do
+	-- defun foo is
+	parse [Ident "defun", Ident "foo", Ident "is", Ident "end"] @?=
+			[Defun "foo" [] []]
 	-- defun foo x is
 	parse [Ident "defun", Ident "foo", Ident "x", Ident "is", Ident "end"] @?=
 			[Defun "foo" [Var "x"] []]
