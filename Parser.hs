@@ -46,7 +46,8 @@ takeIdentifier = do
 
 peekToken = do
 	ParserState {tokens=tokens} <- get
-	return $ head tokens
+	if tokens == [] then return Nothing
+	else return . Just $ head tokens
 
 lookupArity ident = do
 	ParserState {arities=arities} <- get
@@ -65,6 +66,7 @@ expectToken token = do
 		Nothing -> error $ "parser: expected " ++ show token ++ " but got end of stream"
 
 -- Continually parse expressions until the predicate applied with current token is True. Consumes the matching token.
+parseUntil :: (Maybe T.Token -> Bool) -> StateP [AST]
 parseUntil predicate = do
 	tok <- peekToken
 	case tok of
@@ -83,7 +85,7 @@ parseDefun = do
 	let args = map (\(T.Ident i) -> Var i) args'
 	let arity = length args
 	bindArity name arity -- bind arity so that we can parse calls (and before the body so self-reference works)
-	body <- parseUntil (== T.Ident "end")
+	body <- parseUntil (== Just (T.Ident "end"))
 	return $ Defun name args body
 
 -- Parse one expression
@@ -104,20 +106,14 @@ parseExpr = do
 		Just T.LParen -> do
 			-- parenthesized application
 			fn <- parseExpr
-			args <- parseUntil (== T.RParen)
+			args <- parseUntil (== Just (T.RParen))
 			return $ Apply fn args
 		Just t -> error $ "parseExpr: unhandled token " ++ show t
 		Nothing -> error "parseExpr: empty stream"
 
 -- Parse the toplevel
 parseTop :: StateP [AST]
-parseTop = do
-	ParserState {tokens=tokens} <- get
-	if tokens == [] then return []
-	else do
-		expr <- parseExpr
-		next <- parseTop
-		return $ expr : next
+parseTop = parseUntil (== Nothing)
 
 parse' :: ArityMap -> [T.Token] -> [AST]
 parse' arities tokens = evalState parseTop ParserState { arities=arities, tokens=tokens }
