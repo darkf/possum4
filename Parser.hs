@@ -64,14 +64,14 @@ expectToken token = do
 		Just t -> error $ "parser: expected " ++ show token ++ " but got " ++ show t
 		Nothing -> error $ "parser: expected " ++ show token ++ " but got end of stream"
 
--- Parses a function body. Parses expressions until `end` is reached
-parseBody = do
+-- Continually parse expressions until the predicate applied with current token is True. Consumes the matching token.
+parseUntil predicate = do
 	tok <- peekToken
 	case tok of
-		T.Ident "end" -> return []
+		t | predicate t -> takeToken >> return []
 		_ -> do
 			expr <- parseExpr
-			next <- parseBody
+			next <- parseUntil predicate
 			return $ expr : next
 
 -- Parses a defun
@@ -83,8 +83,7 @@ parseDefun = do
 	let args = map (\(T.Ident i) -> Var i) args'
 	let arity = length args
 	bindArity name arity -- bind arity so that we can parse calls (and before the body so self-reference works)
-	body <- parseBody
-	expectToken $ T.Ident "end"
+	body <- parseUntil (== T.Ident "end")
 	return $ Defun name args body
 
 -- Parse one expression
