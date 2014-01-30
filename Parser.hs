@@ -55,7 +55,7 @@ lookupArity ident = do
 bindArity ident arity = do
 	p@ParserState {arities=arities} <- get
 	let arities' = M.insert ident arity arities
-	return $ p {arities=arities'}
+	put $ p {arities=arities'}
 
 expectToken token = do
 	tok <- takeToken

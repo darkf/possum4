@@ -60,6 +60,22 @@ defun_test = TestCase $ do
 	parseWith (M.fromList [("+", 2)]) [Ident "defun", Ident "foo", Ident "x", Ident "y", Ident "is", Ident "+", Ident "x", Ident "y", Ident "end"] @?=
 			[Defun "foo" [Var "x", Var "y"] [Apply (Var "+") [Var "x", Var "y"]]]
 
+multiple_defun_test = TestCase $ do
+	parse [ Ident "defun", Ident "foo", Ident "is", Ident "end",
+			Ident "defun", Ident "plus", Ident "x", Ident "y", Ident "is", Ident "end",
+			Ident "defun", Ident "bar", Ident "x", Ident "is", Ident "plus", Ident "x", Number 1.0, Ident "end",
+			Ident "foo",
+			Ident "plus", Number 1.0, Number 2.0,
+			Ident "bar", Number 5.0
+		  ] @?= [
+		  	Defun "foo" [] [],
+		  	Defun "plus" [Var "x", Var "y"] [],
+		  	Defun "bar" [Var "x"] [Apply (Var "plus") [Var "x", NumLit 1.0]],
+		  	Apply (Var "foo") [],
+		  	Apply (Var "plus") [NumLit 1.0, NumLit 2.0],
+		  	Apply (Var "bar") [NumLit 5.0]
+		  ]
+
 parserTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -67,5 +83,7 @@ parserTests = TestList [
 
 	  TestLabel "bare_app_test" bare_app_test,
 
-	  TestLabel "defun_test" defun_test
+	  TestLabel "defun_test" defun_test,
+
+	  TestLabel "multiple_defun_test" multiple_defun_test
 	]
