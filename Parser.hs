@@ -1,3 +1,8 @@
+{- Part of possum4
+   Copyright (c) 2014 darkf
+   Licensed under the terms of the MIT license
+   See LICENSE.txt for details -}
+
 module Parser (parse, parseWith, parseString, parseStringWith, ArityMap) where
 import AST
 import Control.Monad.State
