@@ -43,6 +43,13 @@ defun_test = TestCase $ do
 	"defun f x is end" $$= Fn [Var "x"] []
 	"defun f x is + 1 2 end" $$= Fn [Var "x"] [Apply (Var "+") [NumLit 1.0, NumLit 2.0]]
 
+-- function test
+fn_test = TestCase $ do
+	"defun f is end\nf" $$= Nil
+	"defun f x is end\nf 1" $$= Nil
+	"defun f x is + 1 2 end\nf 1" $$= Number 3.0
+	"defun f x is + 1 x end\nf 4" $$= Number 5.0
+
 integrationTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -51,5 +58,6 @@ integrationTests = TestList [
 	  TestLabel "app_bif_test" app_bif_test,
 
 	  TestLabel "def_test" def_test,
-	  TestLabel "defun_test" defun_test
+	  TestLabel "defun_test" defun_test,
+	  TestLabel "fn_test" fn_test
 	]
