@@ -15,7 +15,7 @@ actual @??= expected = actual >>= (@?= expected)
 
 -- Empty
 empty_test = TestCase $ do
-	interpret [] >>= (@?= Nil)
+	interpret [] @??= Nil
 
 -- Literals test
 literals_test = TestCase $ do
@@ -23,9 +23,8 @@ literals_test = TestCase $ do
 
 -- Variable test
 variable_test = TestCase $ do
-	-- interpret [Var "x"]
-	return ()
-
+	interpretWith [M.fromList [("x", Number 1.0)]] [Var "x"] @??= Number 1.0
+	interpretWith [M.fromList [("x", Number 1.0), ("y", Number 2.0)]] [Var "y"] @??= Number 2.0
 
 interpreterTests = TestList [
 	  TestLabel "empty_test" empty_test,
