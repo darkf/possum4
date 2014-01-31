@@ -44,6 +44,17 @@ bind_test = TestCase $ do
 							 Def "y" (NumLit 234.0),
 							 Var "y"] @??= Number 234.0
 
+-- Defun test
+defun_test = TestCase $ do
+	-- defun f is end
+	interpretWith [M.empty] [Defun "f" [] []] @??= Fn [] []
+	-- defun f is end   f
+	interpretWith [M.empty] [Defun "f" [] [], Var "f"] @??= Fn [] []
+	-- defun f x is end   f
+	interpretWith [M.empty] [Defun "f" [Var "x"] [], Var "f"] @??= Fn [Var "x"] []
+	-- defun f x is y end   f
+	interpretWith [M.empty] [Defun "f" [Var "x"] [Var "y"], Var "f"] @??= Fn [Var "x"] [Var "y"]
+
 interpreterTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -51,5 +62,7 @@ interpreterTests = TestList [
 
 	  TestLabel "lookup_test" lookup_test,
 	  TestLabel "lookup_scope_test" lookup_scope_test,
-	  TestLabel "bind_test" bind_test
+	  TestLabel "bind_test" bind_test,
+
+	  TestLabel "defun_test" defun_test
 	]

@@ -11,6 +11,7 @@ import AST
 
 data Value = Number Double
 		   | Str String
+		   | Fn [AST] [AST]
 		   | Nil
 		   deriving (Show, Eq)
 
@@ -42,6 +43,11 @@ interpretNode (Def name v) = do
 	val <- interpretNode v
 	put $ p {env=bind env name val}
 	return val
+interpretNode (Defun name args body) = do
+	p@InterpState {env=env} <- get
+	let fn = Fn args body
+	put $ p {env=bind env name fn}
+	return fn
 
 interpret' :: [AST] -> StateI Value
 interpret' = foldl (\m a -> m >> interpretNode a) (return Nil)
