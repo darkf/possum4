@@ -42,6 +42,13 @@ bare_app_test = TestCase $ do
 					   Var "y"
 					   ]
 
+def_test = TestCase $ do
+	-- def x 123
+	parse [Ident "def", Ident "x", Number 123.0] @?= [Def "x" (NumLit 123.0)]
+	-- def foo (+ 1 2)
+	parse [Ident "def", Ident "foo", LParen, Ident "+", Number 1.0, Number 2.0, RParen]
+		@?= [Def "foo" (Apply (Var "+") [NumLit 1.0, NumLit 2.0])]
+
 defun_test = TestCase $ do
 	-- defun foo is end
 	parse [Ident "defun", Ident "foo", Ident "is", Ident "end"] @?=
@@ -118,6 +125,8 @@ parserTests = TestList [
 	  TestLabel "literals_test" literals_test,
 
 	  TestLabel "bare_app_test" bare_app_test,
+
+	  TestLabel "def_test" def_test,
 
 	  TestLabel "defun_test" defun_test,
 	  TestLabel "multiple_defun_test" multiple_defun_test,

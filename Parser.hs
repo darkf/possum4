@@ -100,6 +100,7 @@ parseExpr = do
 	case tok of
 		Just (T.Number n) -> return $ NumLit n
 		Just (T.Ident "defun") -> parseDefun
+		Just (T.Ident "def") -> liftM2 Def takeIdentifier parseExpr
 		Just (T.Ident "if") -> do
 			cond <- parseExpr
 			then_ <- parseExpr

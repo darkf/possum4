@@ -37,6 +37,11 @@ interpretNode (NumLit x) = return $ Number x
 interpretNode (Var x) = do
 	InterpState {env=env} <- get
 	maybe (error $ "unbound variable " ++ x) return (lookup env x)
+interpretNode (Def name v) = do
+	p@InterpState {env=env} <- get
+	val <- interpretNode v
+	put $ p {env=bind env name val}
+	return val
 
 interpret' :: [AST] -> StateI Value
 interpret' = foldl (\m a -> m >> interpretNode a) (return Nil)
