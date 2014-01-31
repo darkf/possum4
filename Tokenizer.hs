@@ -17,7 +17,7 @@ isIdentifierChar :: Char -> Bool
 isIdentifierChar = (`elem` ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "!?~@#$%^&*-+{}.,/")
 
 splitIdentifier :: String -> (String, String)
-splitIdentifier = break (not . isIdentifierChar)
+splitIdentifier = span isIdentifierChar
 
 tryParseNum :: String -> Maybe Double
 tryParseNum str =
@@ -28,7 +28,7 @@ tryParseNum str =
 tokenize :: String -> [Token]
 tokenize "" = []
 tokenize (c:str)
-	| c == ' ' || c == '\t' = tokenize str -- ignore spaces/tabs
+	| isSpace c = tokenize str -- ignore spaces/tabs
 	| c == '(' = LParen : tokenize str
 	| c == ')' = RParen : tokenize str
 	| otherwise =

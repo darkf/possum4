@@ -40,6 +40,9 @@ spaces_test = TestCase $ do
 	tokenize "a     b  c     d" @?= [Ident "a", Ident "b", Ident "c", Ident "d"]
 	tokenize "a     1  2.5     d" @?= [Ident "a", Number 1.0, Number 2.5, Ident "d"]
 	tokenize "a  \t  1\t2.5     d" @?= [Ident "a", Number 1.0, Number 2.5, Ident "d"]
+	-- newlines
+	tokenize "a\nb" @?= [Ident "a", Ident "b"]
+	tokenize "a \t\n\t b" @?= [Ident "a", Ident "b"]
 
 -- Parentheses
 parens_test = TestCase $ do
