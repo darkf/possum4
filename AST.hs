@@ -9,6 +9,7 @@ data AST = NumLit Double
 		 | StrLit String
 		 | Var String
 		 | Def String AST
+		 | If AST AST (Maybe AST)
 		 | Lambda [AST] [AST]
 		 | Defun String [AST] [AST]
 		 | Apply AST [AST]

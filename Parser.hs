@@ -100,6 +100,16 @@ parseExpr = do
 	case tok of
 		Just (T.Number n) -> return $ NumLit n
 		Just (T.Ident "defun") -> parseDefun
+		Just (T.Ident "if") -> do
+			cond <- parseExpr
+			then_ <- parseExpr
+			t <- peekToken
+			case t of
+				Just (T.Ident "else") -> do
+					_ <- takeToken
+					else_ <- parseExpr
+					return $ If cond then_ (Just else_)
+				_ -> return $ If cond then_ Nothing
 		Just (T.Ident ident) -> do
 			arity' <- lookupArity ident
 			case arity' of

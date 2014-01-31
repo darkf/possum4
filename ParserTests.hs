@@ -96,6 +96,22 @@ paren_apply_test = TestCase $ do
 					Var "z"
 				]]
 
+-- `if` expressions
+if_test = TestCase $ do
+	-- if x y
+	parse [Ident "if", Ident "x", Ident "y"] @?=
+			[If (Var "x") (Var "y") Nothing]
+	-- if id x id y
+	parseWith (M.fromList [("id", 1)]) [Ident "if", Ident "id", Ident "x", Ident "id", Ident "y"] @?=
+			[If (Apply (Var "id") [Var "x"]) (Apply (Var "id") [Var "y"]) Nothing]
+	-- if x y else z
+	parse [Ident "if", Ident "x", Ident "y", Ident "else", Ident "z"] @?=
+			[If (Var "x") (Var "y") (Just $ Var "z")]
+	-- if id x id y else id z
+	parseWith (M.fromList [("id", 1)]) [Ident "if", Ident "id", Ident "x", Ident "id", Ident "y", Ident "else", Ident "id", Ident "z"] @?=
+			[If (Apply (Var "id") [Var "x"]) (Apply (Var "id") [Var "y"])
+				(Just (Apply (Var "id") [Var "z"]))]
+
 parserTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -105,5 +121,7 @@ parserTests = TestList [
 
 	  TestLabel "defun_test" defun_test,
 	  TestLabel "multiple_defun_test" multiple_defun_test,
-	  TestLabel "paren_apply_test" paren_apply_test
+	  TestLabel "paren_apply_test" paren_apply_test,
+
+	  TestLabel "if_test" if_test
 	]
