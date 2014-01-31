@@ -10,7 +10,7 @@ import Parser
 import Interpreter
 
 runSource :: String -> IO Value
-runSource = interpret . parseString
+runSource = interpret . parseStringWith builtinArities
 
 actual @??= expected = actual >>= (@?= expected)
 source $$= expected = runSource source @??= expected

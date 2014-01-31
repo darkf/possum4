@@ -33,6 +33,7 @@ initialGlobalEnv = M.fromList [ ("nil", Nil)
 							  , ("id", bif 1 $ \[x] -> return x)
 							  , ("+", bif 2 $ \[Number x, Number y] -> return $ Number (x+y))
 							  ]
+builtinArities = M.fromList $ concatMap (\(name, v) -> case v of Builtin (BIF a _) -> [(name,a)] ; _ -> []) $ M.toList initialGlobalEnv
 
 -- look up a binding from the bottom up
 lookup :: Env -> String -> Maybe Value
@@ -51,7 +52,7 @@ apply (Builtin (BIF arity fn)) args = do
 		error $ "apply: argument mismatch: expected " ++ show arity ++
 				" arguments, got " ++ show (length args)
 	else return ()
-	
+
 	fn args
 
 apply (Fn fnargs body) args = do
