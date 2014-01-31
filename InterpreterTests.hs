@@ -55,6 +55,17 @@ defun_test = TestCase $ do
 	-- defun f x is y end   f
 	interpretWith [M.empty] [Defun "f" [Var "x"] [Var "y"], Var "f"] @??= Fn [Var "x"] [Var "y"]
 
+-- Application test
+app_test = TestCase $ do
+	-- just test that parameters are being passed and the function is being applied
+	let env = [M.fromList [("f0", Fn [] [NumLit 1.0])
+						  ,("f1", Fn [Var "x"] [NumLit 2.0])
+						  ,("f2", Fn [Var "x", Var "y"] [NumLit 3.0])
+						  ]]
+	interpretWith env [Apply (Var "f0") []] @??= Number 1.0
+	interpretWith env [Apply (Var "f1") [NumLit 1.0]] @??= Number 2.0
+	interpretWith env [Apply (Var "f2") [NumLit 1.0, NumLit 2.0]] @??= Number 3.0
+
 interpreterTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -64,5 +75,7 @@ interpreterTests = TestList [
 	  TestLabel "lookup_scope_test" lookup_scope_test,
 	  TestLabel "bind_test" bind_test,
 
-	  TestLabel "defun_test" defun_test
+	  TestLabel "defun_test" defun_test,
+
+	  TestLabel "app_test" app_test
 	]

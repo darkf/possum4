@@ -33,6 +33,26 @@ lookup (env:xs) name =
 bind :: Env -> String -> Value -> Env
 bind (env:xs) name value = (M.insert name value env):xs
 
+-- apply a function
+apply :: Value -> [Value] -> StateI Value
+apply (Fn fnargs body) args = do
+	p@InterpState {env=env} <- get
+
+	if length fnargs /= length args then
+		error $ "apply: argument mismatch: expected " ++ show (length fnargs) ++
+				" arguments, got " ++ show (length args)
+	else return ()
+
+	let fnargs' = map (\(Var x) -> x) fnargs :: [String]
+	let localScope = M.fromList $ zip fnargs' args -- fn local scope has arguments bound
+	put $ p {env=localScope : env} -- push new scope
+
+	ret <- interpret' body -- evaluate body
+	p@InterpState {env=env} <- get
+	put $ p {env=tail env} -- pop function scope
+	return ret
+
+
 interpretNode :: AST -> StateI Value
 interpretNode (NumLit x) = return $ Number x
 interpretNode (Var x) = do
@@ -48,6 +68,10 @@ interpretNode (Defun name args body) = do
 	let fn = Fn args body
 	put $ p {env=bind env name fn}
 	return fn
+interpretNode (Apply fn' args') = do
+	fn <- interpretNode fn'
+	args <- mapM interpretNode args'
+	apply fn args
 
 interpret' :: [AST] -> StateI Value
 interpret' = foldl (\m a -> m >> interpretNode a) (return Nil)
