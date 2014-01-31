@@ -11,9 +11,16 @@ import AST
 
 data Value = Number Double
 		   | Str String
+		   | Builtin BIF
 		   | Fn [AST] [AST]
 		   | Nil
 		   deriving (Show, Eq)
+
+-- separate just so Show/Eq can be derived in Value
+data BIF = BIF Int ([Value] -> StateI Value)
+
+instance Show BIF where show (BIF arity _) = "<built-in/" ++ show arity ++ ">"
+instance Eq BIF where _ == _ = False
 
 type Env = [M.Map String Value] -- last is always global
 
@@ -21,7 +28,11 @@ data InterpState = InterpState { env :: Env }
 
 type StateI = StateT InterpState IO
 
-initialGlobalEnv = M.fromList [ ("nil", Nil) ]
+bif arity fn = Builtin $ BIF arity fn
+initialGlobalEnv = M.fromList [ ("nil", Nil)
+							  , ("id", bif 1 $ \[x] -> return x)
+							  , ("+", bif 2 $ \[Number x, Number y] -> return $ Number (x+y))
+							  ]
 
 -- look up a binding from the bottom up
 lookup :: Env -> String -> Maybe Value
@@ -35,10 +46,18 @@ bind (env:xs) name value = (M.insert name value env):xs
 
 -- apply a function
 apply :: Value -> [Value] -> StateI Value
+apply (Builtin (BIF arity fn)) args = do
+	if length args /= arity then
+		error $ "apply: argument mismatch: expected " ++ show arity ++
+				" arguments, got " ++ show (length args)
+	else return ()
+	
+	fn args
+
 apply (Fn fnargs body) args = do
 	p@InterpState {env=env} <- get
 
-	if length fnargs /= length args then
+	if length args /= length fnargs then
 		error $ "apply: argument mismatch: expected " ++ show (length fnargs) ++
 				" arguments, got " ++ show (length args)
 	else return ()

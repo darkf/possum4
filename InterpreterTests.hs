@@ -66,6 +66,11 @@ app_test = TestCase $ do
 	interpretWith env [Apply (Var "f1") [NumLit 1.0]] @??= Number 2.0
 	interpretWith env [Apply (Var "f2") [NumLit 1.0, NumLit 2.0]] @??= Number 3.0
 
+-- Application of Built-in Functions test
+app_builtin = TestCase $ do
+	interpret [Apply (Var "id") [NumLit 123.0]] @??= Number 123.0
+	interpret [Apply (Var "+") [NumLit 1.0, NumLit 4.0]] @??= Number 5.0
+
 interpreterTests = TestList [
 	  TestLabel "empty_test" empty_test,
 
@@ -77,5 +82,6 @@ interpreterTests = TestList [
 
 	  TestLabel "defun_test" defun_test,
 
-	  TestLabel "app_test" app_test
+	  TestLabel "app_test" app_test,
+	  TestLabel "app_test" app_builtin
 	]
