@@ -12,6 +12,7 @@ import AST
 
 data Value = Number Double
 		   | Str String
+		   | Boolean Bool
 		   | Builtin BIF
 		   | Fn [AST] [AST]
 		   | Nil
@@ -31,12 +32,15 @@ type StateI = StateT InterpState IO
 
 bif arity fn = Builtin $ BIF arity fn
 initialGlobalEnv = M.fromList [ ("nil", Nil)
+							  , ("true", Boolean True)
+							  , ("false", Boolean False)
 							  , ("id", bif 1 $ \[x] -> return x)
 							  , ("+", bif 2 $ \[Number x, Number y] -> return $ Number (x+y))
 							  , ("*", bif 2 $ \[Number x, Number y] -> return $ Number (x*y))
 							  , ("-", bif 2 $ \[Number x, Number y] -> return $ Number (x-y))
 							  , ("/", bif 2 $ \[Number x, Number y] -> return $ Number (x/y))
 							  , ("%", bif 2 $ \[Number x, Number y] -> return $ Number (mod' x y))
+							  , ("=", bif 2 $ \[x, y] -> return $ Boolean (x==y))
 							  ]
 builtinArities = aritiesFromEnv [initialGlobalEnv]
 
