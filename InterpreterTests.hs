@@ -20,6 +20,7 @@ empty_test = TestCase $ do
 -- Literals test
 literals_test = TestCase $ do
 	interpret [NumLit 123.0] @??= Number 123.0
+	interpret [StrLit "abc"] @??= Str "abc"
 
 -- Variable lookup test
 lookup_test = TestCase $ do

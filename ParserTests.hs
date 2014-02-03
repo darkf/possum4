@@ -19,6 +19,7 @@ empty_test = TestCase $ do
 -- Literals test
 literals_test = TestCase $ do
 	parse [Number 123.0] @?= [NumLit 123.0]
+	parse [Str "abc"] @?= [StrLit "abc"]
 	parse [Ident "x"] @?= [Var "x"]
 
 -- Bare application (no parentheses) with fixed arities test

@@ -85,6 +85,7 @@ apply (Fn fnargs body) args = do
 
 interpretNode :: AST -> StateI Value
 interpretNode (NumLit x) = return $ Number x
+interpretNode (StrLit x) = return $ Str x
 interpretNode (Var x) = do
 	InterpState {env=env} <- get
 	maybe (error $ "unbound variable " ++ x) return (lookup env x)

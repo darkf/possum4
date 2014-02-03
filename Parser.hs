@@ -99,6 +99,7 @@ parseExpr = do
 	tok <- takeToken
 	case tok of
 		Just (T.Number n) -> return $ NumLit n
+		Just (T.Str s) -> return $ StrLit s
 		Just (T.Ident "defun") -> parseDefun
 		Just (T.Ident "def") -> liftM2 Def takeIdentifier parseExpr
 		Just (T.Ident "if") -> do
