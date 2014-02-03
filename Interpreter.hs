@@ -102,6 +102,11 @@ interpretNode (Apply fn' args') = do
 	fn <- interpretNode fn'
 	args <- mapM interpretNode args'
 	apply fn args
+interpretNode (If c t e) = do
+	cond <- interpretNode c
+	case cond of
+		Boolean True -> interpretNode t
+		_ -> maybe (return Nil) interpretNode e
 
 currentEnv :: StateI Env
 currentEnv = do
