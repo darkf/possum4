@@ -14,7 +14,7 @@ data Token = Ident String
 		   deriving (Show, Eq)
 
 isIdentifierChar :: Char -> Bool
-isIdentifierChar = (`elem` ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "!?~@#$%^&*-+{}.,/")
+isIdentifierChar = (`elem` ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "!?~@#$%^&*-_=+{}[]|'.,/")
 
 splitIdentifier :: String -> (String, String)
 splitIdentifier = span isIdentifierChar
