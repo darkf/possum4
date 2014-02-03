@@ -16,7 +16,18 @@ data Value = Number Double
 		   | Builtin BIF
 		   | Fn [AST] [AST]
 		   | Nil
-		   deriving (Show, Eq)
+		   deriving (Eq)
+
+instance Show Value where
+	show Nil = "nil"
+	show (Boolean b) = show b
+	show (Number i) =
+		if i == fromInteger (floor i) then
+			show $ toInteger (floor i) -- leave off the .0 in x.0
+		else show i
+	show (Str s) = show s
+	show (Fn args _) = "<fn/" ++ show (length args) ++ ">"
+	show (Builtin (BIF arity _)) = "<built-in/" ++ show arity ++ ">"
 
 -- separate just so Show/Eq can be derived in Value
 data BIF = BIF Int ([Value] -> StateI Value)
@@ -36,6 +47,7 @@ initialGlobalEnv = M.fromList [ ("nil", Nil)
 							  , ("false", Boolean False)
 							  , ("id", bif 1 $ \[x] -> return x)
 							  , ("print", bif 1 $ \[x] -> liftIO (print x) >> return x)
+							  , ("putstr", bif 1 $ \[Str x] -> liftIO (putStrLn x) >> return (Str x))
 							  , ("+", bif 2 $ \[Number x, Number y] -> return $ Number (x+y))
 							  , ("*", bif 2 $ \[Number x, Number y] -> return $ Number (x*y))
 							  , ("-", bif 2 $ \[Number x, Number y] -> return $ Number (x-y))
