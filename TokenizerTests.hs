@@ -52,6 +52,21 @@ parens_test = TestCase $ do
 	tokenize " ( ) " @?= [LParen, RParen]
 	tokenize "a(b)c" @?= [Ident "a", LParen, Ident "b", RParen, Ident "c"]
 
+-- Strings
+string_test = TestCase $ do
+	tokenize "\"\"" @?= [Str ""]
+	tokenize " \" \" " @?= [Str " "]
+	tokenize "\"abc\" " @?= [Str "abc"]
+	tokenize "\"abc 123\" " @?= [Str "abc 123"]
+	
+	-- escaping
+	tokenize "\"\\\"\" " @?= [Str "\""]
+	tokenize "\"\\\\\" " @?= [Str "\\"]
+	tokenize "\"\\n\" " @?= [Str "\n"]
+
+	tokenize "\"abc \\\"123\" " @?= [Str "abc \"123"]
+	tokenize "x ab y    \"123.75\"  z   4" @?= [Ident "x", Ident "ab", Ident "y", Str "123.75", Ident "z", Number 4]
+
 -- Mixing tokens test
 mixed_test = TestCase $ do
 	tokenize "x ab y 123.75 z 4" @?= [Ident "x", Ident "ab", Ident "y", Number 123.75, Ident "z", Number 4]
@@ -70,6 +85,8 @@ tokenizerTests = TestList [
 	  TestLabel "spaces_test" spaces_test,
 
 	  TestLabel "parens_test" parens_test,
+
+	  TestLabel "string_test" string_test,
 
 	  TestLabel "mixed_test" mixed_test
 	]
