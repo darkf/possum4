@@ -34,6 +34,11 @@ tokenizeString isEscape (c:str) i =
 			_ -> c `plus` tokenizeString False str (i+1)
 	where plus c (s, len) = (c:s, len)
 
+ignoreComment :: String -> String
+ignoreComment "" = error "tokenizeComment: end of stream"
+ignoreComment ('}':'}':str) = str
+ignoreComment (_:str) = ignoreComment str
+
 tryParseNum :: String -> Maybe Double
 tryParseNum str =
 	case reads str of
@@ -48,6 +53,7 @@ tokenize (c:str)
 	| c == ')' = RParen : tokenize str
 	| c == '"' = let (token,len) = tokenizeString False str 0 in
 		Str token : tokenize (drop len str)
+	| c == '{' && head str == '{' = tokenize $ ignoreComment (tail str)
 	| otherwise =
 		let (token,rest) = splitIdentifier (c:str) in
 		case tryParseNum token of

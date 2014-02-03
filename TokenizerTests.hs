@@ -67,6 +67,14 @@ string_test = TestCase $ do
 	tokenize "\"abc \\\"123\" " @?= [Str "abc \"123"]
 	tokenize "x ab y    \"123.75\"  z   4" @?= [Ident "x", Ident "ab", Ident "y", Str "123.75", Ident "z", Number 4]
 
+-- Comment test
+comment_test = TestCase $ do
+	tokenize "{{}}" @?= []
+	tokenize "{{ }}" @?= []
+	tokenize " {{ }} " @?= []
+	tokenize " {{ abc xyz 123 ??? }} " @?= []
+	tokenize "abc {{ 123 ??? }} xyz" @?= [Ident "abc", Ident "xyz"]
+
 -- Mixing tokens test
 mixed_test = TestCase $ do
 	tokenize "x ab y 123.75 z 4" @?= [Ident "x", Ident "ab", Ident "y", Number 123.75, Ident "z", Number 4]
@@ -87,6 +95,8 @@ tokenizerTests = TestList [
 	  TestLabel "parens_test" parens_test,
 
 	  TestLabel "string_test" string_test,
+
+	  TestLabel "comment_test" comment_test,
 
 	  TestLabel "mixed_test" mixed_test
 	]
