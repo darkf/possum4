@@ -33,7 +33,7 @@ initialGlobalEnv = M.fromList [ ("nil", Nil)
 							  , ("id", bif 1 $ \[x] -> return x)
 							  , ("+", bif 2 $ \[Number x, Number y] -> return $ Number (x+y))
 							  ]
-builtinArities = M.fromList $ concatMap (\(name, v) -> case v of Builtin (BIF a _) -> [(name,a)] ; _ -> []) $ M.toList initialGlobalEnv
+builtinArities = aritiesFromEnv [initialGlobalEnv]
 
 -- look up a binding from the bottom up
 lookup :: Env -> String -> Maybe Value
@@ -93,11 +93,34 @@ interpretNode (Apply fn' args') = do
 	args <- mapM interpretNode args'
 	apply fn args
 
+currentEnv :: StateI Env
+currentEnv = do
+	InterpState {env=env} <- get
+	return env
+
+aritiesFromEnv :: Env -> M.Map String Int
+aritiesFromEnv [] = M.empty
+aritiesFromEnv (sym:syms) =
+	M.fromList $ concatMap (\(name, v) ->
+		case v of
+			Builtin (BIF a _) -> [(name,a)]
+			Fn args _ -> [(name, length args)]
+			_ -> []) $ M.toList sym
+
+currentArities :: StateI (M.Map String Int)
+currentArities = liftM aritiesFromEnv currentEnv
+
+exec :: StateI a -> IO a
+exec state = evalStateT state InterpState {env=[initialGlobalEnv]}
+
+execWith :: Env -> StateI a -> IO a
+execWith env state = evalStateT state InterpState {env=env}
+
 interpret' :: [AST] -> StateI Value
 interpret' = foldl (\m a -> m >> interpretNode a) (return Nil)
 
 interpret :: [AST] -> IO Value
-interpret ast = evalStateT (interpret' ast) InterpState {env=[initialGlobalEnv]}
+interpret = exec . interpret'
 
 interpretWith :: Env -> [AST] -> IO Value
-interpretWith env ast = evalStateT (interpret' ast) InterpState {env=env}
+interpretWith env = execWith env . interpret'
