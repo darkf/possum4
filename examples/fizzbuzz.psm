@@ -1,0 +1,33 @@
+{{ Boolean AND operator }}
+defun and x y is
+  if x
+    if y true
+    else false
+  else false
+end
+
+{{ Ignores its two arguments - just here to sequence two side-effecting calls }}
+defun ignoreSeq x y is end
+
+{{ If n is divisible by 3, prints "Fizz", if divisible by 5, "Buzz", 3 and 5, "FizzBuzz",
+   else just prints the number unchanged. }}
+defun fizzbuzz n is
+  if and   = % n 3 0   = % n 5 0   {{ Divisible by 3 and 5? }}
+    putstr "FizzBuzz "
+  else
+    if = % n 3 0   {{ Divisible by 3? }}
+      putstr "Fizz "
+    else
+      if = % n 5 0   {{ Divisible by 5? }}
+        putstr "Buzz "
+      else putstr +s repr n " "  {{ Print out unchanged }}
+end
+
+{{ Loop `fizzbuzz i` from i to 0 }}
+defun iter i is
+  if = i 0 nil
+  else ignoreSeq fizzbuzz i iter - i 1
+end
+
+{{ Use 100..1 }}
+iter 100
