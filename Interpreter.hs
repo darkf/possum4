@@ -5,6 +5,7 @@
 
 module Interpreter where
 import Prelude hiding (lookup)
+import Data.Fixed (mod')
 import Control.Monad.State
 import qualified Data.Map as M
 import AST
@@ -32,6 +33,10 @@ bif arity fn = Builtin $ BIF arity fn
 initialGlobalEnv = M.fromList [ ("nil", Nil)
 							  , ("id", bif 1 $ \[x] -> return x)
 							  , ("+", bif 2 $ \[Number x, Number y] -> return $ Number (x+y))
+							  , ("*", bif 2 $ \[Number x, Number y] -> return $ Number (x*y))
+							  , ("-", bif 2 $ \[Number x, Number y] -> return $ Number (x-y))
+							  , ("/", bif 2 $ \[Number x, Number y] -> return $ Number (x/y))
+							  , ("%", bif 2 $ \[Number x, Number y] -> return $ Number (mod' x y))
 							  ]
 builtinArities = aritiesFromEnv [initialGlobalEnv]
 
